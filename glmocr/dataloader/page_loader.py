@@ -157,8 +157,11 @@ class PageLoader:
         if isinstance(sources, str):
             sources = [sources]
         for unit_idx, source in enumerate(sources):
-            for page in self._iter_source(source):
-                yield page, unit_idx
+            try:
+                for page in self._iter_source(source):
+                    yield page, unit_idx
+            except Exception as e:
+                logger.warning("Skipping source '%s' (unit %d): %s", source, unit_idx, e)
 
     def _iter_source(self, source: str):
         """Yield pages from a single source one at a time."""

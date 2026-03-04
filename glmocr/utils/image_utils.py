@@ -9,6 +9,10 @@ from io import BytesIO
 import numpy as np
 from PIL import Image
 
+from glmocr.utils.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 def smart_resize(
     t: int,
@@ -379,12 +383,18 @@ def pdf_to_images_pil_iter(
         if end_page_id >= page_count:
             end_page_id = page_count - 1
         for i in range(start_page_id, end_page_id + 1):
-            page = pdf[i]
+            try:
+                page = pdf[i]
+            except Exception as e:
+                logger.warning("Skipping page %d of '%s': %s", i, pdf_path, e)
+                continue
             try:
                 image, _ = _page_to_image(
                     page, dpi=dpi, max_width_or_height=max_width_or_height
                 )
                 yield image
+            except Exception as e:
+                logger.warning("Skipping page %d of '%s' (render failed): %s", i, pdf_path, e)
             finally:
                 page.close()
     finally:
