@@ -5,7 +5,7 @@ from __future__ import annotations
 import importlib
 from typing import TYPE_CHECKING
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __author__ = "ZHIPUAI"
 
 __all__ = [
