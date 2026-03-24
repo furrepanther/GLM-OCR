@@ -1353,6 +1353,24 @@ class TestGlmOcrConstructor:
             assert parser._use_maas is False
             parser.close()
 
+    def test_selfhosted_model_kwarg_is_forwarded_to_ocr_api(self, monkeypatch):
+        """model=... should configure self-hosted OCR request model."""
+        from glmocr.config import _ENV_MAP, ENV_PREFIX
+
+        for suffix in _ENV_MAP:
+            monkeypatch.delenv(f"{ENV_PREFIX}{suffix}", raising=False)
+        monkeypatch.setattr("glmocr.config._find_dotenv", lambda: None)
+
+        with patch("glmocr.pipeline.Pipeline") as mock_pipeline:
+            mock_pipeline.return_value.start = MagicMock()
+            mock_pipeline.return_value.enable_layout = False
+            from glmocr.api import GlmOcr
+
+            parser = GlmOcr(mode="selfhosted", model="glm-ocr")
+            assert parser._use_maas is False
+            assert parser.config_model.pipeline.ocr_api.model == "glm-ocr"
+            parser.close()
+
 
 class TestOCRClientOllamaConfig:
     """Tests for OCRClient initialization with Ollama api_mode."""

@@ -430,7 +430,6 @@ class GlmOcrConfig(_BaseConfig):
         _KW_MAP = {
             "api_key": "pipeline.maas.api_key",
             "api_url": "pipeline.maas.api_url",
-            "model": "pipeline.maas.model",
             "mode": "pipeline.maas.enabled",
             "timeout": "pipeline.maas.request_timeout",
             "enable_layout": "pipeline.enable_layout",
@@ -442,6 +441,15 @@ class GlmOcrConfig(_BaseConfig):
             "cuda_visible_devices": "pipeline.layout.cuda_visible_devices",
             "layout_device": "pipeline.layout.device",
         }
+
+        # `model` is shared by both MaaS and self-hosted modes.
+        # Keep MaaS behavior while also forwarding it to OCR API so that
+        # `GlmOcr(mode="selfhosted", model="...")` works as expected.
+        if "model" in overrides and overrides["model"] is not None:
+            model_value = str(overrides["model"])
+            _set_nested(data, "pipeline.maas.model", model_value)
+            _set_nested(data, "pipeline.ocr_api.model", model_value)
+
         for kw, dotted in _KW_MAP.items():
             if kw in overrides and overrides[kw] is not None:
                 raw = overrides[kw]
